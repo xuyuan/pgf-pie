@@ -80,7 +80,6 @@ chart by using PGF/Tikz package.]
   }
   \pgfkeys{#1}
 
-  \def\explodearray{{\explode}}
   \setcounter{pgfpie@explodeLength}{0}
   \foreach \e in \explode { \addtocounter{pgfpie@explodeLength}{1} }
 
@@ -95,8 +94,14 @@ chart by using PGF/Tikz package.]
     \addtocounter{pgfpie@angleEnd}{\p}
 
     % find explode
-    \pgfmathparse{\explodearray[int(mod(\i,\value{pgfpie@explodeLength}))]}
-    \let\e\pgfmathresult
+    \pgfmathparse{int(mod(\i,\value{pgfpie@explodeLength}))}
+    \let\ei\pgfmathresult
+    \foreach \e [count=\j from 0] in \explode {
+      \ifnum \j=\ei
+      \xdef\theexplode{\e}
+      \breakforeach
+      \fi
+    }
 
     % find color
     \pgfmathparse{int(mod(\i,\value{pgfpie@colorLength}))}
@@ -112,7 +117,7 @@ chart by using PGF/Tikz package.]
     {\thepgfpie@angleEnd/100*360}
     {\beforenumber \p \afternumber}
     {\t}
-    {\e}
+    {\theexplode}
     {\thecolor}
     {\radius}
     {\pos}
