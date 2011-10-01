@@ -50,6 +50,7 @@ chart by using PGF/Tikz package.]
 \newcounter{pgfpie@angleEnd}
 \newcounter{pgfpie@explodeLength}
 \newcounter{pgfpie@colorLength}
+\newcounter{pgfpie@sliceLength}
 
 \def\setexplode#1\pgfeov{\def\explode{#1}}
 \pgfkeyslet{/explode/.@cmd}{\setexplode}
@@ -81,8 +82,12 @@ chart by using PGF/Tikz package.]
 \def\setrotate#1\pgfeov{\xdef\rotate{#1}}
 \pgfkeyslet{/rotate/.@cmd}{\setrotate}
 
+\newif\ifpolar
+\pgfkeys{/polar/.is if=polar}
+
 \newcommand{\pie}[2][]
 {
+  % load default parameters
   \pgfkeys{
     explode=0,
     color={blue!60, cyan!60, yellow!60, orange!60, red!60,
@@ -96,9 +101,12 @@ chart by using PGF/Tikz package.]
     text=label,
     sum=100,
     rotate=0,
+    polar=false,
   }
+  % load user's parameters
   \pgfkeys{#1}
 
+  % handle sum
   \ifthenelse{\equal{\sum}{auto}}
   {
     % sum all input
@@ -111,7 +119,7 @@ chart by using PGF/Tikz package.]
   }
   {}
 
-
+  % init counters
   \setcounter{pgfpie@explodeLength}{0}
   \foreach \e in \explode { \addtocounter{pgfpie@explodeLength}{1} }
 
@@ -120,10 +128,35 @@ chart by using PGF/Tikz package.]
   
   \setcounter{pgfpie@angleEnd}{0}
 
+  \ifpolar
+    \setcounter{pgfpie@sliceLength}{0}
+    \xdef\maxValue{0}
+    \foreach \p/\e in {#2} {
+      \addtocounter{pgfpie@sliceLength}{1}
+      \ifnum \maxValue < \p
+        \xdef\maxValue{\p}
+      \fi
+    }
+    \pgfmathparse{\sum / \value{pgfpie@sliceLength}}
+    \xdef\polarangle{\pgfmathresult}
+    \pgfmathparse{\radius / \maxValue}
+    \xdef\polarRadiusUnit{\pgfmathresult}
+  \else
+    \xdef\theradius{\radius}
+  \fi
+
+  % drawing loop
   \foreach \p/\t [count=\i from 0] in {#2}
   {
     \setcounter{pgfpie@angleBegin}{\value{pgfpie@angleEnd}}
-    \addtocounter{pgfpie@angleEnd}{\p}
+    \ifpolar
+      % Polar area diagram
+      \addtocounter{pgfpie@angleEnd}{\polarangle}
+      \xdef\theradius{\p*\polarRadiusUnit}
+    \else
+      % normal pie
+      \addtocounter{pgfpie@angleEnd}{\p}
+    \fi
 
     % find explode
     \pgfmathparse{int(mod(\i,\value{pgfpie@explodeLength}))}
@@ -151,7 +184,7 @@ chart by using PGF/Tikz package.]
     {\t}
     {\theexplode}
     {\thecolor}
-    {\radius}
+    {\theradius}
     {\pos}
     {\style}
   }
