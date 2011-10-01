@@ -11,6 +11,7 @@
 chart by using PGF/Tikz package.]
 
 \RequirePackage{tikz}
+\RequirePackage{ifthen}
 
 % args:
 % #1: begin angle
@@ -32,7 +33,7 @@ chart by using PGF/Tikz package.]
   \let\radius\pgfmathresult
   
   % slice
-  \draw[fill=#6, #9] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
+  \draw[line join=round, fill=#6, #9] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   % outer label
   \path (O) -- ++ (\midangle:\radius) node[inner sep=0, \text=\midangle:#4]{};
@@ -74,6 +75,9 @@ chart by using PGF/Tikz package.]
 \def\settext#1\pgfeov{\xdef\text{#1}}
 \pgfkeyslet{/text/.@cmd}{\settext}
 
+\def\setsum#1\pgfeov{\xdef\sum{#1}}
+\pgfkeyslet{/sum/.@cmd}{\setsum}
+
 \newcommand{\pie}[2][]
 {
   \pgfkeys{
@@ -85,8 +89,22 @@ chart by using PGF/Tikz package.]
     before number=,
     after number=\%,
     text=label,
+    sum=100,
   }
   \pgfkeys{#1}
+
+  \ifthenelse{\equal{\sum}{auto}}
+  {
+    % sum all input
+    \xdef\sum{0}
+    \foreach \p/\t in {#2}
+    {
+      \pgfmathparse{\sum + \p}
+      \xdef\sum{\pgfmathresult}
+    }
+  }
+  {}
+
 
   \setcounter{pgfpie@explodeLength}{0}
   \foreach \e in \explode { \addtocounter{pgfpie@explodeLength}{1} }
@@ -121,8 +139,8 @@ chart by using PGF/Tikz package.]
       \fi
     }
 
-    \pgfpie@slice{\thepgfpie@angleBegin/100*360}
-    {\thepgfpie@angleEnd/100*360}
+    \pgfpie@slice{\thepgfpie@angleBegin/\sum*360}
+    {\thepgfpie@angleEnd/\sum*360}
     {\beforenumber \p \afternumber}
     {\t}
     {\theexplode}
