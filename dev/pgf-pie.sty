@@ -164,7 +164,7 @@ chart by using PGF/Tikz package.]
     }
     \pgfmathparse{\sum / \value{pgfpie@sliceLength}}
     \xdef\polarangle{\pgfmathresult}
-    \pgfmathparse{\radius / \maxValue}
+    \pgfmathparse{\radius / sqrt(\maxValue)}
     \xdef\polarRadiusUnit{\pgfmathresult}
   \else
     \xdef\theradius{\radius}
@@ -177,7 +177,8 @@ chart by using PGF/Tikz package.]
     \ifpolar
       % Polar area diagram
       \addtocounter{pgfpie@angleEnd}{\polarangle}
-      \xdef\theradius{\p*\polarRadiusUnit}
+      \pgfmathparse{sqrt(\p) * \polarRadiusUnit}
+      \xdef\theradius{\pgfmathresult}
     \else
       % normal pie
       \addtocounter{pgfpie@angleEnd}{\p}
