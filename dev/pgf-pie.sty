@@ -1,17 +1,16 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Start of pgf-pie.sty
-%
+% 
 % Some LaTeX macros for pie chart by using PGF/Tikz package.
 % Home page of project: http://pgf-pie.googlecode.com/
 % Author: Xu Yuan <xuyuan.cn@gmail.com>
-%
+% 
 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
 \ProvidesPackage{pgf-pie}[2011/10/01 v0.1 Some LaTeX macros for pie
 chart by using PGF/Tikz package.]
 
 \RequirePackage{tikz}
-\usetikzlibrary{shadows}
 
 % args:
 % #1: begin angle
@@ -22,13 +21,14 @@ chart by using PGF/Tikz package.]
 % #6: fill color
 % #7: radius
 % #8: center
-\newcommand{\pgfpie@slice}[8]{
+% #9: style
+\newcommand{\pgfpie@slice}[9]{
   \pgfmathparse{0.5*#1+0.5*#2}
   \let\midangle\pgfmathresult
 
   \path (#8) -- ++(\midangle:#5) coordinate(O);
   % slice
-  \draw[thick,fill=#6] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
+  \draw[fill=#6, #9] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   % outer label
   \path (O) -- ++ (\midangle:#7) node[label=\midangle:#4]{};
@@ -44,13 +44,13 @@ chart by using PGF/Tikz package.]
 \newcounter{pgfpie@angleBegin}
 \newcounter{pgfpie@angleEnd}
 \newcounter{pgfpie@explodeLength}
-\newcounter{pgfpie@colormapLength}
+\newcounter{pgfpie@colorLength}
 
 \def\setexplode#1\pgfeov{\def\explode{#1}}
 \pgfkeyslet{/explode/.@cmd}{\setexplode}
 
-\def\setcolormap#1\pgfeov{\def\colormap{#1}}
-\pgfkeyslet{/colormap/.@cmd}{\setcolormap}
+\def\setcolor#1\pgfeov{\def\color{#1}}
+\pgfkeyslet{/color/.@cmd}{\setcolor}
 
 \def\setradius#1\pgfeov{\def\radius{#1}}
 \pgfkeyslet{/radius/.@cmd}{\setradius}
@@ -58,13 +58,17 @@ chart by using PGF/Tikz package.]
 \def\setpos#1\pgfeov{\def\pos{#1}}
 \pgfkeyslet{/pos/.@cmd}{\setpos}
 
+\def\setstyle#1\pgfeov{\def\style{#1}}
+\pgfkeyslet{/style/.@cmd}{\setstyle}
+
 \newcommand{\pie}[2][]
 {
   \pgfkeys{
     explode=0,
-    colormap={blue!60, cyan!60, yellow!60, orange!60, red!60},
+    color={blue!60, cyan!60, yellow!60, orange!60, red!60},
     radius=3,
-    pos={0,0}
+    pos={0,0},
+    style={thick}
   }
   \pgfkeys{#1}
 
@@ -72,41 +76,42 @@ chart by using PGF/Tikz package.]
   \setcounter{pgfpie@explodeLength}{0}
   \foreach \e in \explode { \addtocounter{pgfpie@explodeLength}{1} }
 
-  \setcounter{pgfpie@colormapLength}{0}
-  \foreach \c in \colormap { \addtocounter{pgfpie@colormapLength}{1} }
+  \setcounter{pgfpie@colorLength}{0}
+  \foreach \c in \color { \addtocounter{pgfpie@colorLength}{1} }
   
   \setcounter{pgfpie@angleEnd}{0}
 
+  \foreach \p/\t [count=\i from 0] in {#2}
+  {
+    \setcounter{pgfpie@angleBegin}{\value{pgfpie@angleEnd}}
+    \addtocounter{pgfpie@angleEnd}{\p}
 
-    \foreach \p/\t [count=\i from 0] in {#2}
-    {
-      \setcounter{pgfpie@angleBegin}{\value{pgfpie@angleEnd}}
-      \addtocounter{pgfpie@angleEnd}{\p}
+    % find explode
+    \pgfmathparse{\explodearray[int(mod(\i,\value{pgfpie@explodeLength}))]}
+    \let\e\pgfmathresult
 
-      % find explode
-      \pgfmathparse{\explodearray[int(mod(\i,\value{pgfpie@explodeLength}))]}
-      \let\e\pgfmathresult
-
-      % find color
-      \pgfmathparse{int(mod(\i,\value{pgfpie@colormapLength}))}
-      \let\ci\pgfmathresult
-      \foreach \c [count=\j from 0] in \colormap {
-        \ifnum \j=\ci
-          \xdef\thecolor{\c}
-          \breakforeach
-        \fi
-      }
-
-      \pgfpie@slice{\thepgfpie@angleBegin/100*360}
-      {\thepgfpie@angleEnd/100*360}
-      {\p\%}{\t}
-      {\e}
-      {\thecolor}
-      {\radius}
-      {\pos}
+    % find color
+    \pgfmathparse{int(mod(\i,\value{pgfpie@colorLength}))}
+    \let\ci\pgfmathresult
+    \foreach \c [count=\j from 0] in \color {
+      \ifnum \j=\ci
+      \xdef\thecolor{\c}
+      \breakforeach
+      \fi
     }
+
+    \pgfpie@slice{\thepgfpie@angleBegin/100*360}
+    {\thepgfpie@angleEnd/100*360}
+    {\p\%}
+    {\t}
+    {\e}
+    {\thecolor}
+    {\radius}
+    {\pos}
+    {\style}
+  }
 }
 
 %%% End of pgf-pie.sty
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
