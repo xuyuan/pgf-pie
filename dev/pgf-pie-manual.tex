@@ -37,27 +37,33 @@ keywordstyle=\color{blue}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\demo}[2][1]{
-\begin{minipage}{.49\linewidth}
-\centering
-\resizebox{#1\linewidth}{!}{
-\input{demo/#2}
-}
-\end{minipage}
-\hspace{0.01\linewidth}
-\begin{minipage}{.5\linewidth}
-\lstinputlisting{demo/#2}
-\end{minipage}
+  \begin{center}
+  \begin{tabular}{cc}
+    \begin{minipage}{.49\linewidth}
+      \centering
+      \resizebox{#1\linewidth}{!}{
+        \input{demo/#2}
+      }
+    \end{minipage}
+    &
+    \begin{minipage}{.45\linewidth}
+      \lstinputlisting{demo/#2}
+    \end{minipage}
+  \end{tabular}
+  \end{center}
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\example}[1]{
-\resizebox{\linewidth}{!}{
-\input{demo/#1}
+\newcommand{\example}[2][1]{
+  \begin{center}  
+    \resizebox{#1\linewidth}{!}{
+      \input{demo/#2}
+    }
+  \end{center}
+  \lstinputlisting{demo/#2}
 }
-\lstinputlisting{demo/#1}
-}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,6 +94,12 @@ keywordstyle=\color{blue}
 
 \subsection{Color}
 \demo[0.6]{color}
+
+\subsection{Radius, Position}
+The size of chart can be set by \texttt{radius}, default is 3. The
+center of chart can be set by \texttt{pos}, default is \texttt{\{0,0\}}.
+
+\demo{radius}
 
 \section{Examples}
 

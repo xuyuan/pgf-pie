@@ -21,22 +21,24 @@ chart by using PGF/Tikz package.]
 % #5: explode
 % #6: fill color
 % #7: radius
-\newcommand{\pgfpie@slice}[7]{
+% #8: center
+\newcommand{\pgfpie@slice}[8]{
   \pgfmathparse{0.5*#1+0.5*#2}
   \let\midangle\pgfmathresult
 
+  \path (#8) -- ++(\midangle:#5) coordinate(O);
   % slice
-  \draw[thick,fill=#6] (\midangle:#5) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
+  \draw[thick,fill=#6] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   % outer label
-  \node[label=\midangle:#4] at (\midangle:#7) {};
+  \path (O) -- ++ (\midangle:#7) node[label=\midangle:#4]{};
 
   % inner label
   \pgfmathparse{min((#2-#1-10)/110*(-0.3),0)}
   \let\temp\pgfmathresult
   \pgfmathparse{(max(\temp,-0.5) + 0.8)*#7}
   \let\innerpos\pgfmathresult
-  \node at (\midangle:\innerpos) {#3};
+  \path (O) -- ++(\midangle:\innerpos) node {#3};
 }
 
 \newcounter{pgfpie@angleBegin}
@@ -53,11 +55,17 @@ chart by using PGF/Tikz package.]
 \def\setradius#1\pgfeov{\def\radius{#1}}
 \pgfkeyslet{/radius/.@cmd}{\setradius}
 
+\def\setpos#1\pgfeov{\def\pos{#1}}
+\pgfkeyslet{/pos/.@cmd}{\setpos}
+
 \newcommand{\pie}[2][]
 {
-  \pgfkeys{explode=0,
+  \pgfkeys{
+    explode=0,
     colormap={blue!60, cyan!60, yellow!60, orange!60, red!60},
-    radius=3}
+    radius=3,
+    pos={0,0}
+  }
   \pgfkeys{#1}
 
   \def\explodearray{{\explode}}
@@ -95,6 +103,7 @@ chart by using PGF/Tikz package.]
       {\e}
       {\thecolor}
       {\radius}
+      {\pos}
     }
 }
 
