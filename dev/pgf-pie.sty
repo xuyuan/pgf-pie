@@ -61,6 +61,12 @@ chart by using PGF/Tikz package.]
 \def\setstyle#1\pgfeov{\def\style{#1}}
 \pgfkeyslet{/style/.@cmd}{\setstyle}
 
+\def\setbeforenumber#1\pgfeov{\def\beforenumber{#1}}
+\pgfkeyslet{/before number/.@cmd}{\setbeforenumber}
+
+\def\setafternumber#1\pgfeov{\def\afternumber{#1}}
+\pgfkeyslet{/after number/.@cmd}{\setafternumber}
+
 \newcommand{\pie}[2][]
 {
   \pgfkeys{
@@ -68,7 +74,9 @@ chart by using PGF/Tikz package.]
     color={blue!60, cyan!60, yellow!60, orange!60, red!60},
     radius=3,
     pos={0,0},
-    style={thick}
+    style={thick},
+    before number=,
+    after number=\%,
   }
   \pgfkeys{#1}
 
@@ -102,7 +110,7 @@ chart by using PGF/Tikz package.]
 
     \pgfpie@slice{\thepgfpie@angleBegin/100*360}
     {\thepgfpie@angleEnd/100*360}
-    {\p\%}
+    {\beforenumber \p \afternumber}
     {\t}
     {\e}
     {\thecolor}
