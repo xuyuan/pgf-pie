@@ -33,10 +33,10 @@ chart by using PGF/Tikz package.]
   \node at (\midangle:\innerpos) {#3};
 }
 
-\newcounter{a}
-\newcounter{b}
-\newcounter{explodelength}
-\newcounter{colormaplength}
+\newcounter{pgfpie@angleBegin}
+\newcounter{pgfpie@angleEnd}
+\newcounter{pgfpie@explodeLength}
+\newcounter{pgfpie@colormapLength}
 
 \def\setexplode#1\pgfeov{\def\explode{#1}}
 \pgfkeyslet{/explode/.@cmd}{\setexplode}
@@ -51,31 +51,28 @@ chart by using PGF/Tikz package.]
   \pgfkeys{#1}
 
   \def\explodearray{{\explode}}
-  \setcounter{explodelength}{0}
-  \foreach \e in \explode { \addtocounter{explodelength}{1} }
+  \setcounter{pgfpie@explodeLength}{0}
+  \foreach \e in \explode { \addtocounter{pgfpie@explodeLength}{1} }
 
-  \setcounter{colormaplength}{0}
-
-    \foreach \c in \colormap {
-    \addtocounter{colormaplength}{1}
-  }
+  \setcounter{pgfpie@colormapLength}{0}
+  \foreach \c in \colormap { \addtocounter{pgfpie@colormapLength}{1} }
   
-  \setcounter{b}{0}
+  \setcounter{pgfpie@angleEnd}{0}
   \begin{tikzpicture}[scale=3,
 % x={(1cm,0cm)}, y={(0cm,0.5cm)}
 ]
 
     \foreach \p/\t [count=\i from 0] in {#2}
     {
-      \setcounter{a}{\value{b}}
-      \addtocounter{b}{\p}
+      \setcounter{pgfpie@angleBegin}{\value{pgfpie@angleEnd}}
+      \addtocounter{pgfpie@angleEnd}{\p}
 
       % find explode
-      \pgfmathparse{\explodearray[int(mod(\i,\value{explodelength}))]}
+      \pgfmathparse{\explodearray[int(mod(\i,\value{pgfpie@explodeLength}))]}
       \let\e\pgfmathresult
 
       % find color
-      \pgfmathparse{int(mod(\i,\value{colormaplength}))}
+      \pgfmathparse{int(mod(\i,\value{pgfpie@colormapLength}))}
       \let\ci\pgfmathresult
       \foreach \c [count=\j from 0] in \colormap {
         \ifnum \j=\ci
@@ -84,8 +81,8 @@ chart by using PGF/Tikz package.]
         \fi
       }
 
-      \pgfpie@slice{\thea/100*360}
-      {\theb/100*360}
+      \pgfpie@slice{\thepgfpie@angleBegin/100*360}
+      {\thepgfpie@angleEnd/100*360}
       {\p\%}{\t}
       {\e}
       {\thecolor}
