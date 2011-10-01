@@ -1,0 +1,99 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Start of pgf-pie.sty
+%
+% Some LaTeX macros for pie chart by using PGF/Tikz package.
+% Home page of project: http://pgf-pie.googlecode.com/
+% Author: Xu Yuan <xuyuan.cn@gmail.com>
+%
+
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{pgf-pie}[2011/10/01 v0.1 Some LaTeX macros for pie
+chart by using PGF/Tikz package.]
+
+\RequirePackage{tikz}
+\usetikzlibrary{shadows}
+
+\newcommand{\pgfpie@slice}[6]{
+  \pgfmathparse{0.5*#1+0.5*#2}
+  \let\midangle\pgfmathresult
+
+  \pgfmathparse{1}
+  \let\radius\pgfmathresult
+  % slice
+  \draw[thick,fill=#6, drop shadow] (\midangle:#5) -- ++(#1:\radius) arc (#1:#2:\radius) -- cycle;
+
+  % outer label
+  \node[label=\midangle:#4] at (\midangle:1) {};
+
+  % inner label
+  \pgfmathparse{min((#2-#1-10)/110*(-0.3),0)}
+  \let\temp\pgfmathresult
+  \pgfmathparse{max(\temp,-0.5) + 0.8}
+  \let\innerpos\pgfmathresult
+  \node at (\midangle:\innerpos) {#3};
+}
+
+\newcounter{a}
+\newcounter{b}
+\newcounter{explodelength}
+\newcounter{colormaplength}
+
+\def\setexplode#1\pgfeov{\def\explode{#1}}
+\pgfkeyslet{/explode/.@cmd}{\setexplode}
+
+\def\setcolormap#1\pgfeov{\def\colormap{#1}}
+\pgfkeyslet{/colormap/.@cmd}{\setcolormap}
+
+\newcommand{\pie}[2][]
+{
+  \pgfkeys{explode=0,
+    colormap={blue!60, cyan!60, yellow!60, orange!60, red!60}}
+  \pgfkeys{#1}
+
+  \def\explodearray{{\explode}}
+  \setcounter{explodelength}{0}
+  \foreach \e in \explode { \addtocounter{explodelength}{1} }
+
+  \setcounter{colormaplength}{0}
+
+    \foreach \c in \colormap {
+    \addtocounter{colormaplength}{1}
+  }
+  
+  \setcounter{b}{0}
+  \begin{tikzpicture}[scale=3,
+% x={(1cm,0cm)}, y={(0cm,0.5cm)}
+]
+
+    \foreach \p/\t [count=\i from 0] in {#2}
+    {
+      \setcounter{a}{\value{b}}
+      \addtocounter{b}{\p}
+
+      % find explode
+      \pgfmathparse{\explodearray[int(mod(\i,\value{explodelength}))]}
+      \let\e\pgfmathresult
+
+      % find color
+      \pgfmathparse{int(mod(\i,\value{colormaplength}))}
+      \let\ci\pgfmathresult
+      \foreach \c [count=\j from 0] in \colormap {
+        \ifnum \j=\ci
+          \xdef\thecolor{\c}
+          \breakforeach
+        \fi
+      }
+
+      \pgfpie@slice{\thea/100*360}
+      {\theb/100*360}
+      {\p\%}{\t}
+      {\e}
+      {\thecolor}
+    }
+
+  \end{tikzpicture}
+}
+
+%%% End of pgf-pie.sty
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

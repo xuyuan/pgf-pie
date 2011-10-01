@@ -1,0 +1,109 @@
+% Manual of pgf-pie.sty, a convenient set of macros for drawing pie
+% chart. Written by Xu Yuan <xuyuan.cn@gmail.com> This file is part of
+% pgf-pie you may get it at http://code.google.com/p/pgf-pie/
+
+\documentclass{article}
+\usepackage[margin=12mm]{geometry}
+\usepackage{hyperref}
+
+\usepackage{pgf-pie}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{listings}
+\usepackage{color}
+\definecolor{listinggray}{gray}{0.92}
+\lstset{ %
+language=[LaTeX]TeX,
+breaklines=true,
+frame=single,
+% frameround=tttt,
+basicstyle=\footnotesize\ttfamily,
+backgroundcolor=\color{listinggray},
+keywordstyle=\color{blue}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  anchorcolor=black,
+  citecolor=olive,
+  filecolor=magenta,
+  menucolor=red,
+  urlcolor=blue
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\demo}[2][1]{
+\begin{minipage}{.49\linewidth}
+\centering
+\resizebox{#1\linewidth}{!}{
+\input{demo/#2}
+}
+\end{minipage}
+\hspace{0.01\linewidth}
+\begin{minipage}{.5\linewidth}
+\lstinputlisting{demo/#2}
+\end{minipage}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\example}[1]{
+\resizebox{\linewidth}{!}{
+\input{demo/#1}
+}
+\lstinputlisting{demo/#1}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Drawing Pie Chart by using \texttt{pgf-pie}}
+\author{\href{mailto:xuyuan.cn@gmail.com}{Yuan Xu}}
+\date{\today{}~(v0.1)}
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+  \texttt{pgf-pie} is a LaTeX package for drawing pie chart. As stated
+  by its name, it is based on a very popular graphic package
+  \texttt{PGF/TikZ}. This document presents the usage of
+  \texttt{pgf-pie} and collects some pie charts as examples.
+  \texttt{pgf-pie} can be downloaded from
+  \href{http://code.google.com/p/pgf-pie/}{http://code.google.com/p/pgf-pie/}.
+\end{abstract}
+
+\tableofcontents
+
+\section{The Essentials}
+
+
+\section{Examples}
+
+\demo[0.6]{pie}
+
+% \pie{20/, 4/, 11/, 49/, 16/}
+
+% \pie{20/type A, 4/type B, 11/type C, 49/type D, 16/other}
+
+% \pie[explode={0, 0.01, 0},]{20/type A, 4/type B, 11/type C, 49/type D, 16/other}
+
+% \pie[explode={0, 0.01}, colormap=black!10]{20/type A, 4/type B,
+%   11/type C, 49/type D, 16/other}
+
+% \pie{10/, 10/, 10/, 10/, 10/, 10/, 10/, 10/, 10/, 10/ }
+
+% \section{Acknowledgements}
+% Many people contributed to \texttt{pgf-pie} by reporting problems,
+% suggesting various improvements or submitting code. Here is a list of
+% these people:
+% \href{mailto:???}{name}.
+
+\end{document}
+%%% Local Variables: 
+%%% mode: Tex-PDF
+%%% TeX-master: t
+%%% End: 
