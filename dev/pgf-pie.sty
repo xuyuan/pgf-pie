@@ -152,11 +152,12 @@ chart by using PGF/Tikz package.]
   
   \setcounter{pgfpie@angleEnd}{0}
 
+  \setcounter{pgfpie@sliceLength}{0}
+  \foreach \p/\e in {#2} { \addtocounter{pgfpie@sliceLength}{1} }
+
   \ifpolar
-    \setcounter{pgfpie@sliceLength}{0}
     \xdef\maxValue{0}
     \foreach \p/\e in {#2} {
-      \addtocounter{pgfpie@sliceLength}{1}
       \ifnum \maxValue < \p
         \xdef\maxValue{\p}
       \fi
@@ -208,7 +209,10 @@ chart by using PGF/Tikz package.]
 
   % legend
   \iflegend
-    \coordinate[xshift=0.8cm] (legendpos) at (current bounding box.north east);
+    \coordinate[xshift=0.8cm,
+    yshift=(\value{pgfpie@sliceLength}*0.5+1)*0.5cm] (legendpos) at
+    (current bounding box.east);
+
     \begin{scope}[node distance=0.5cm]
     \foreach \p/\t  [count=\i from 0] in {#2}
     {
