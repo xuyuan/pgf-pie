@@ -27,11 +27,15 @@ chart by using PGF/Tikz package.]
   \let\midangle\pgfmathresult
 
   \path (#8) -- ++(\midangle:#5) coordinate(O);
+
+  \pgfmathparse{#7+#5}
+  \let\radius\pgfmathresult
+  
   % slice
   \draw[fill=#6, #9] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   % outer label
-  \path (O) -- ++ (\midangle:#7) node[label=\midangle:#4]{};
+  \path (O) -- ++ (\midangle:\radius) node[inner sep=0, \text=\midangle:#4]{};
 
   % inner label
   \pgfmathparse{min((#2-#1-10)/110*(-0.3),0)}
@@ -67,6 +71,9 @@ chart by using PGF/Tikz package.]
 \def\setafternumber#1\pgfeov{\def\afternumber{#1}}
 \pgfkeyslet{/after number/.@cmd}{\setafternumber}
 
+\def\settext#1\pgfeov{\xdef\text{#1}}
+\pgfkeyslet{/text/.@cmd}{\settext}
+
 \newcommand{\pie}[2][]
 {
   \pgfkeys{
@@ -77,6 +84,7 @@ chart by using PGF/Tikz package.]
     style={thick},
     before number=,
     after number=\%,
+    text=label,
   }
   \pgfkeys{#1}
 
