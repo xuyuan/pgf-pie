@@ -26,7 +26,7 @@ chart by using PGF/Tikz package.]
   \let\midangle\pgfmathresult
 
   % slice
-  \draw[thick,fill=#6, drop shadow] (\midangle:#5) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
+  \draw[thick,fill=#6] (\midangle:#5) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   % outer label
   \node[label=\midangle:#4] at (\midangle:#7) {};
