@@ -13,22 +13,28 @@ chart by using PGF/Tikz package.]
 \RequirePackage{tikz}
 \usetikzlibrary{shadows}
 
-\newcommand{\pgfpie@slice}[6]{
+% args:
+% #1: begin angle
+% #2: end angle
+% #3: inner label
+% #4: outer label
+% #5: explode
+% #6: fill color
+% #7: radius
+\newcommand{\pgfpie@slice}[7]{
   \pgfmathparse{0.5*#1+0.5*#2}
   \let\midangle\pgfmathresult
 
-  \pgfmathparse{1}
-  \let\radius\pgfmathresult
   % slice
-  \draw[thick,fill=#6, drop shadow] (\midangle:#5) -- ++(#1:\radius) arc (#1:#2:\radius) -- cycle;
+  \draw[thick,fill=#6, drop shadow] (\midangle:#5) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   % outer label
-  \node[label=\midangle:#4] at (\midangle:1) {};
+  \node[label=\midangle:#4] at (\midangle:#7) {};
 
   % inner label
   \pgfmathparse{min((#2-#1-10)/110*(-0.3),0)}
   \let\temp\pgfmathresult
-  \pgfmathparse{max(\temp,-0.5) + 0.8}
+  \pgfmathparse{(max(\temp,-0.5) + 0.8)*#7}
   \let\innerpos\pgfmathresult
   \node at (\midangle:\innerpos) {#3};
 }
@@ -44,10 +50,14 @@ chart by using PGF/Tikz package.]
 \def\setcolormap#1\pgfeov{\def\colormap{#1}}
 \pgfkeyslet{/colormap/.@cmd}{\setcolormap}
 
+\def\setradius#1\pgfeov{\def\radius{#1}}
+\pgfkeyslet{/radius/.@cmd}{\setradius}
+
 \newcommand{\pie}[2][]
 {
   \pgfkeys{explode=0,
-    colormap={blue!60, cyan!60, yellow!60, orange!60, red!60}}
+    colormap={blue!60, cyan!60, yellow!60, orange!60, red!60},
+    radius=3}
   \pgfkeys{#1}
 
   \def\explodearray{{\explode}}
@@ -58,9 +68,7 @@ chart by using PGF/Tikz package.]
   \foreach \c in \colormap { \addtocounter{pgfpie@colormapLength}{1} }
   
   \setcounter{pgfpie@angleEnd}{0}
-  \begin{tikzpicture}[scale=3,
-% x={(1cm,0cm)}, y={(0cm,0.5cm)}
-]
+
 
     \foreach \p/\t [count=\i from 0] in {#2}
     {
@@ -86,9 +94,8 @@ chart by using PGF/Tikz package.]
       {\p\%}{\t}
       {\e}
       {\thecolor}
+      {\radius}
     }
-
-  \end{tikzpicture}
 }
 
 %%% End of pgf-pie.sty
