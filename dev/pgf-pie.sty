@@ -24,7 +24,7 @@ chart by using PGF/Tikz package.]
 % #8: center
 % #9: style
 \newcommand{\pgfpie@slice}[9]{
-  \pgfmathparse{0.5*#1+0.5*#2}
+  \pgfmathparse{0.5*(#1)+0.5*(#2)}
   \let\midangle\pgfmathresult
 
   \path (#8) -- ++(\midangle:#5) coordinate(O);
@@ -39,7 +39,7 @@ chart by using PGF/Tikz package.]
   \path (O) -- ++ (\midangle:\radius) node[inner sep=0, \text=\midangle:#4]{};
 
   % inner label
-  \pgfmathparse{min((#2-#1-10)/110*(-0.3),0)}
+  \pgfmathparse{min(((#2)-(#1)-10)/110*(-0.3),0)}
   \let\temp\pgfmathresult
   \pgfmathparse{(max(\temp,-0.5) + 0.8)*#7}
   \let\innerpos\pgfmathresult
@@ -78,6 +78,9 @@ chart by using PGF/Tikz package.]
 \def\setsum#1\pgfeov{\xdef\sum{#1}}
 \pgfkeyslet{/sum/.@cmd}{\setsum}
 
+\def\setrotate#1\pgfeov{\xdef\rotate{#1}}
+\pgfkeyslet{/rotate/.@cmd}{\setrotate}
+
 \newcommand{\pie}[2][]
 {
   \pgfkeys{
@@ -90,6 +93,7 @@ chart by using PGF/Tikz package.]
     after number=\%,
     text=label,
     sum=100,
+    rotate=0,
   }
   \pgfkeys{#1}
 
@@ -139,8 +143,8 @@ chart by using PGF/Tikz package.]
       \fi
     }
 
-    \pgfpie@slice{\thepgfpie@angleBegin/\sum*360}
-    {\thepgfpie@angleEnd/\sum*360}
+    \pgfpie@slice{\thepgfpie@angleBegin/\sum*360+\rotate}
+    {\thepgfpie@angleEnd/\sum*360+\rotate}
     {\beforenumber \p \afternumber}
     {\t}
     {\theexplode}
