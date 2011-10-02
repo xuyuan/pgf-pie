@@ -7,11 +7,13 @@
 % 
 
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
-\ProvidesPackage{pgf-pie}[2011/10/01 v0.1 Some LaTeX macros for pie
+\ProvidesPackage{pgf-pie}[2011/10/02 v0.2 Some LaTeX macros for pie
 chart by using PGF/Tikz package.]
 
 \RequirePackage{tikz}
 \RequirePackage{ifthen}
+\RequirePackage{scalefnt}
+
 
 % args:
 % #1: begin angle
@@ -22,8 +24,7 @@ chart by using PGF/Tikz package.]
 % #6: fill color
 % #7: radius
 % #8: center
-% #9: style
-\newcommand{\pgfpie@slice}[9]{
+\newcommand{\pgfpie@slice}[8]{
   \pgfmathparse{0.5*(#1)+0.5*(#2)}
   \let\midangle\pgfmathresult
 
@@ -33,7 +34,7 @@ chart by using PGF/Tikz package.]
   \let\radius\pgfmathresult
   
   % slice
-  \draw[line join=round, fill=#6, #9] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
+  \draw[line join=round, fill=#6, \style] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   \pgfmathparse{min(((#2)-(#1)-10)/110*(-0.3),0)}
   \let\temp\pgfmathresult
@@ -43,7 +44,8 @@ chart by using PGF/Tikz package.]
   \ifthenelse{\equal{\text}{inside}}
   {
     % label and number together
-    \path (O) -- ++(\midangle:\innerpos) node {\shortstack{#4 \\ #3}};
+    \path (O) -- ++(\midangle:\innerpos) node
+    {\scalefont{#3}\shortstack{#4\\\beforenumber#3\afternumber}};
   }
   {
     % label
@@ -54,7 +56,8 @@ chart by using PGF/Tikz package.]
     \fi
 
     % number
-    \path (O) -- ++(\midangle:\innerpos) node {#3};
+    \path (O) -- ++(\midangle:\innerpos) node
+    {\scalefont{#3}\beforenumber#3\afternumber};
   }
 }
 
@@ -87,10 +90,18 @@ chart by using PGF/Tikz package.]
 % #2: size
 % #3: number
 % #4: color
-% #5: style
+% #5: text
 \newcommand{\pgfpie@square}[5]
 {
-  \draw[fill=#4, #5] (#1) rectangle node {#3} ++(#2);
+  \ifthenelse{\equal{\text}{inside}}
+  {
+    \draw[fill=#4, \style] (#1) rectangle node
+    {\scalefont{#3}\shortstack{#5\\\beforenumber#3\afternumber}} ++(#2);
+  }
+  {
+    \draw[fill=#4, \style] (#1) rectangle node
+    {\scalefont{#3}\beforenumber#3\afternumber} ++(#2);
+  }
 }
 
 % #1: pos
@@ -104,10 +115,10 @@ chart by using PGF/Tikz package.]
   \draw[fill=#4, #5] (#1) circle[radius=#2];
   \ifthenelse{\equal{\text}{inside}}
   {
-    \node at (#1) {\shortstack{#6 \\ #3}};
+    \node at (#1) {\scalefont{#3}\shortstack{#6\\\beforenumber#3\afternumber}};
   }
   {
-    \node at (#1) {#3};
+    \node at (#1) {\scalefont{#3}\beforenumber#3\afternumber};
   }
 }
 
@@ -158,6 +169,17 @@ chart by using PGF/Tikz package.]
 \newif\ifcloud
 \pgfkeys{/cloud/.is if=cloud}
 
+\newif\ifscalefont
+\pgfkeys{/scale font/.is if=scalefont}
+\let\scalefontorg\scalefont
+\renewcommand{\scalefont}[1]
+{
+  \ifscalefont
+  \pgfmathparse{#1 / \sum * 3 + 0.9}
+  \scalefontorg{\pgfmathresult}
+  \fi
+}
+
 \newcommand{\pie}[2][]
 {
   % load default parameters
@@ -177,6 +199,7 @@ chart by using PGF/Tikz package.]
     polar=false,
     square=false,
     cloud=false,
+    scale font=false,
   }
   % load user's parameters
   \pgfkeys{#1}
@@ -237,14 +260,18 @@ chart by using PGF/Tikz package.]
       \let\height\pgfmathresult
       
       \pgfpie@square{start}{\horizontalLength,\height}
-      {\beforenumber \p \afternumber}
+      {\p}
       {\thecolor}
-      {\style}
+      {\t}
+      %label
       \iflegend
       \else
-      %label
-      \path (start) -- ++(\horizontalLength,\height*0.5) node[inner
-      sep=0, \text=0:\t]{};
+      \ifthenelse{\equal{\text}{inside}}
+      {}
+      {
+        \path (start) -- ++(\horizontalLength,\height*0.5) node[inner
+        sep=0, \text=0:\t]{};
+      }
       \fi
 
       \pgfmathparse{\verticalLength - \height}
@@ -256,14 +283,18 @@ chart by using PGF/Tikz package.]
       \let\width\pgfmathresult
 
       \pgfpie@square{start}{\width,\verticalLength}
-      {\beforenumber \p \afternumber}
+      {\p}
       {\thecolor}
-      {\style}
+      {\t}
+      %label
       \iflegend
       \else
-      %label
-      \path (start) -- ++(\width*0.5,\verticalLength) node[inner
-      sep=0, \text=90:\t]{};
+      \ifthenelse{\equal{\text}{inside}}
+      {}
+      {
+        \path (start) -- ++(\width*0.5,\verticalLength) node[inner
+        sep=0, \text=90:\t]{};
+      }
       \fi
 
       \pgfmathparse{\horizontalLength - \width}
@@ -322,7 +353,7 @@ chart by using PGF/Tikz package.]
     % find color
     \pgfpie@findColor{\i}
 
-    \pgfpie@cloud{O}{\cloudR}{\beforenumber \p \afternumber}
+    \pgfpie@cloud{O}{\cloudR}{\p}
     {\thecolor}{\style}{\t}
 
     % label
@@ -376,13 +407,12 @@ chart by using PGF/Tikz package.]
 
     \pgfpie@slice{\thepgfpie@angleBegin/\sum*360+\rotate}
     {\thepgfpie@angleEnd/\sum*360+\rotate}
-    {\beforenumber \p \afternumber}
+    {\p}
     {\t}
     {\theexplode}
     {\thecolor}
     {\theradius}
     {\pos}
-    {\style}
   }
   %%%%%%%%%% CIRCLE PIE END %%%%%%%%%%%
   \fi
