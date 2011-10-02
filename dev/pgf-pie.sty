@@ -75,9 +75,28 @@ chart by using PGF/Tikz package.]
 % #2: size
 % #3: number
 % #4: color
-\newcommand{\pgfpie@square}[4]
+% #5: style
+\newcommand{\pgfpie@square}[5]
 {
-  \draw[fill=#4] (#1) rectangle node {#3} ++(#2);
+  \draw[fill=#4, #5] (#1) rectangle node {#3} ++(#2);
+}
+
+% #1: pos
+% #2: radius
+% #3: number
+% #4: color
+% $5: style
+% $6: label
+\newcommand{\pgfpie@cloud}[6]
+{
+  \draw[fill=#4, #5] (#1) circle[radius=#2];
+  \ifthenelse{\equal{\text}{inside}}
+  {
+    \node at (#1) {\shortstack{#6 \\ #3}};
+  }
+  {
+    \node at (#1) {#3};
+  }
 }
 
 \newcounter{pgfpie@angleBegin}
@@ -124,6 +143,9 @@ chart by using PGF/Tikz package.]
 \newif\ifsquare
 \pgfkeys{/square/.is if=square}
 
+\newif\ifcloud
+\pgfkeys{/cloud/.is if=cloud}
+
 \newcommand{\pie}[2][]
 {
   % load default parameters
@@ -136,15 +158,22 @@ chart by using PGF/Tikz package.]
     pos={0,0},
     style={thick},
     before number=,
-    after number=\%,
+    after number=,
     text=label,
     sum=100,
     rotate=0,
     polar=false,
     square=false,
+    cloud=false,
   }
   % load user's parameters
   \pgfkeys{#1}
+  % add percentage automatically
+  \ifthenelse{\equal{\sum}{100}}
+  {
+    \pgfkeys{after number=\%}
+    \pgfkeys{#1}
+  }{}
 
   % legend or not
   \ifthenelse{\equal{\text}{legend}}
@@ -198,6 +227,7 @@ chart by using PGF/Tikz package.]
       \pgfpie@square{start}{\horizontalLength,\height}
       {\beforenumber \p \afternumber}
       {\thecolor}
+      {\style}
       \iflegend
       \else
       %label
@@ -216,6 +246,7 @@ chart by using PGF/Tikz package.]
       \pgfpie@square{start}{\width,\verticalLength}
       {\beforenumber \p \afternumber}
       {\thecolor}
+      {\style}
       \iflegend
       \else
       %label
@@ -230,6 +261,68 @@ chart by using PGF/Tikz package.]
   }
   
   %%%%%%%%%% SQUARE PIE END %%%%%%%%%%%
+  \else
+  \ifcloud
+  %%%%%%%%%% CLOUD PIE BGEIN %%%%%%%%%%%
+  \xdef\cloudGap{0.1}
+  % drawing loop
+  \foreach \p/\t [count=\i from 0] in {#2}
+  {
+    \pgfmathparse{sqrt(\p / \sum) * \radius}
+    \let\cloudR\pgfmathresult
+    \ifnum \i = 0
+    % first cloud
+    \coordinate (O) at (\pos);
+    \xdef\cloudRone{\cloudR}
+    \xdef\cloudExtendDir{180+\rotate}
+    \else
+    \ifnum \i = 1
+    % second cloud
+    \xdef\cloudRtwo{\cloudR}
+    \xdef\cloudExtendDir{45+\rotate}
+    \path (O) -- ++(\cloudExtendDir:\cloudRone+\cloudGap+\cloudRtwo) coordinate (O);
+    \else
+    % next cloud
+    \pgfmathparse{\cloudRone+\cloudGap+\cloudRtwo}
+    \let\la\pgfmathresult
+    \pgfmathparse{\cloudRone+\cloudGap+\cloudR}
+    \let\lb\pgfmathresult
+    \pgfmathparse{\cloudRtwo+\cloudGap+\cloudR}
+    \let\lc\pgfmathresult
+    \pgfmathparse{\la^2+\lc^2-\lb^2}
+    \let\tmp\pgfmathresult
+    \pgfmathparse{180 - acos(\tmp / 2 / \la / \lc)}
+    \let\cloudRot\pgfmathresult
+    \ifodd \i
+    \pgfmathparse{-\cloudRot}
+    \let\cloudRot\pgfmathresult
+    \fi
+    \pgfmathparse{\cloudExtendDir - \cloudRot}
+    \xdef\cloudExtendDir{\pgfmathresult}
+    \path (O) -- ++(\cloudExtendDir:\lc) coordinate (O);
+    \xdef\cloudRone{\cloudRtwo}
+    \xdef\cloudRtwo{\cloudR}
+    \fi
+    \fi
+
+    % find color
+    \pgfpie@findColor{\i}
+
+    \pgfpie@cloud{O}{\cloudR}{\beforenumber \p \afternumber}
+    {\thecolor}{\style}{\t}
+
+    % label
+    \iflegend
+    \else
+    \ifthenelse{\equal{\text}{inside}}
+    {}
+    {
+      \path (O) -- ++(\cloudExtendDir:\cloudR)
+      node[inner sep=0, \text=\cloudExtendDir:\t] {};
+    }
+    \fi
+  }
+  %%%%%%%%%% CLOUD PIE BGEIN %%%%%%%%%%%
   \else
   %%%%%%%%%% CIRCLE PIE BGEIN %%%%%%%%%%%
   \ifpolar
@@ -285,6 +378,7 @@ chart by using PGF/Tikz package.]
     {\style}
   }
   %%%%%%%%%% CIRCLE PIE END %%%%%%%%%%%
+  \fi
   \fi
 
   % legend
