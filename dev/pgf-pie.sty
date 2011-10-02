@@ -16,8 +16,8 @@ chart by using PGF/Tikz package.]
 % args:
 % #1: begin angle
 % #2: end angle
-% #3: inner label
-% #4: outer label
+% #3: number
+% #4: label
 % #5: explode
 % #6: fill color
 % #7: radius
@@ -35,14 +35,14 @@ chart by using PGF/Tikz package.]
   % slice
   \draw[line join=round, fill=#6, #9] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
-  % outer label
+  % label
   \iflegend
   \else
-    \path (O) -- ++ (\midangle:\radius)
-    node[inner sep=0, \text=\midangle:#4]{};
+  \path (O) -- ++ (\midangle:\radius)
+  node[inner sep=0, \text=\midangle:#4]{};
   \fi
 
-  % inner label
+  % number
   \pgfmathparse{min(((#2)-(#1)-10)/110*(-0.3),0)}
   \let\temp\pgfmathresult
   \pgfmathparse{(max(\temp,-0.5) + 0.8)*#7}
@@ -61,6 +61,15 @@ chart by using PGF/Tikz package.]
     \breakforeach
     \fi
   }
+}
+
+% #1: bottom left point
+% #2: size
+% #3: number
+% #4: color
+\newcommand{\pgfpie@square}[4]
+{
+  \draw[fill=#4] (#1) rectangle node {#3} ++(#2);
 }
 
 \newcounter{pgfpie@angleBegin}
@@ -104,6 +113,9 @@ chart by using PGF/Tikz package.]
 
 \newif\iflegend
 
+\newif\ifsquare
+\pgfkeys{/square/.is if=square}
+
 \newcommand{\pie}[2][]
 {
   % load default parameters
@@ -121,6 +133,7 @@ chart by using PGF/Tikz package.]
     sum=100,
     rotate=0,
     polar=false,
+    square=false,
   }
   % load user's parameters
   \pgfkeys{#1}
@@ -155,19 +168,75 @@ chart by using PGF/Tikz package.]
   \setcounter{pgfpie@sliceLength}{0}
   \foreach \p/\e in {#2} { \addtocounter{pgfpie@sliceLength}{1} }
 
-  \ifpolar
-    \xdef\maxValue{0}
-    \foreach \p/\e in {#2} {
-      \ifnum \maxValue < \p
-        \xdef\maxValue{\p}
+  \ifsquare
+  %%%%%%%%%% SQUARE PIE BEGIN %%%%%%%%%%%
+  \pgfmathparse{\radius*2}
+  \xdef\verticalLength{\pgfmathresult}
+  \xdef\horizontalLength{\pgfmathresult}
+  \path (\pos) -- ++(-\radius, -\radius) coordinate (start);
+  \pgfmathparse{\verticalLength * \horizontalLength / \sum}
+  \let\squareUnit\pgfmathresult
+
+  % drawing loop
+  \foreach \p/\t [count=\i from 0] in {#2}
+  {
+    \pgfpie@findColor{\i}
+
+    \ifthenelse{\lengthtest{\verticalLength cm > \horizontalLength cm}}
+    {
+      \pgfmathparse{\p * \squareUnit / \horizontalLength}
+      \let\height\pgfmathresult
+      
+      \pgfpie@square{start}{\horizontalLength,\height}
+      {\beforenumber \p \afternumber}
+      {\thecolor}
+      \iflegend
+      \else
+      %label
+      \path (start) -- ++(\horizontalLength,\height*0.5) node[inner
+      sep=0, \text=0:\t]{};
       \fi
+
+      \pgfmathparse{\verticalLength - \height}
+      \xdef\verticalLength{\pgfmathresult}
+      \path (start) -- ++(0, \height) coordinate (start);
     }
-    \pgfmathparse{\sum / \value{pgfpie@sliceLength}}
-    \xdef\polarangle{\pgfmathresult}
-    \pgfmathparse{\radius / sqrt(\maxValue)}
-    \xdef\polarRadiusUnit{\pgfmathresult}
+    {
+      \pgfmathparse{\p * \squareUnit / \verticalLength }
+      \let\width\pgfmathresult
+
+      \pgfpie@square{start}{\width,\verticalLength}
+      {\beforenumber \p \afternumber}
+      {\thecolor}
+      \iflegend
+      \else
+      %label
+      \path (start) -- ++(\width*0.5,\verticalLength) node[inner
+      sep=0, \text=90:\t]{};
+      \fi
+
+      \pgfmathparse{\horizontalLength - \width}
+      \xdef\horizontalLength{\pgfmathresult}
+      \path (start) -- ++(\width, 0) coordinate (start);
+    }
+  }
+  
+  %%%%%%%%%% SQUARE PIE END %%%%%%%%%%%
   \else
-    \xdef\theradius{\radius}
+  %%%%%%%%%% CIRCLE PIE BGEIN %%%%%%%%%%%
+  \ifpolar
+  \xdef\maxValue{0}
+  \foreach \p/\e in {#2} {
+    \ifnum \maxValue < \p
+    \xdef\maxValue{\p}
+    \fi
+  }
+  \pgfmathparse{\sum / \value{pgfpie@sliceLength}}
+  \xdef\polarangle{\pgfmathresult}
+  \pgfmathparse{\radius / sqrt(\maxValue)}
+  \xdef\polarRadiusUnit{\pgfmathresult}
+  \else
+  \xdef\theradius{\radius}
   \fi
 
   % drawing loop
@@ -175,13 +244,13 @@ chart by using PGF/Tikz package.]
   {
     \setcounter{pgfpie@angleBegin}{\value{pgfpie@angleEnd}}
     \ifpolar
-      % Polar area diagram
-      \addtocounter{pgfpie@angleEnd}{\polarangle}
-      \pgfmathparse{sqrt(\p) * \polarRadiusUnit}
-      \xdef\theradius{\pgfmathresult}
+    % Polar area diagram
+    \addtocounter{pgfpie@angleEnd}{\polarangle}
+    \pgfmathparse{sqrt(\p) * \polarRadiusUnit}
+    \xdef\theradius{\pgfmathresult}
     \else
-      % normal pie
-      \addtocounter{pgfpie@angleEnd}{\p}
+    % normal pie
+    \addtocounter{pgfpie@angleEnd}{\p}
     \fi
 
     % find explode
@@ -207,21 +276,23 @@ chart by using PGF/Tikz package.]
     {\pos}
     {\style}
   }
+  %%%%%%%%%% CIRCLE PIE END %%%%%%%%%%%
+  \fi
 
   % legend
   \iflegend
-    \coordinate[xshift=0.8cm,
-    yshift=(\value{pgfpie@sliceLength}*0.5+1)*0.5cm] (legendpos) at
-    (current bounding box.east);
+  \coordinate[xshift=0.8cm,
+  yshift=(\value{pgfpie@sliceLength}*0.5+1)*0.5cm] (legendpos) at
+  (current bounding box.east);
 
-    \begin{scope}[node distance=0.5cm]
+  \begin{scope}[node distance=0.5cm]
     \foreach \p/\t  [count=\i from 0] in {#2}
     {
       \pgfpie@findColor{\i}
       \node[draw, fill=\thecolor, \style, below of=legendpos, label=0:\t] (legendpos) {};
     }
-    \end{scope}
-  \fi
+  \end{scope}
+  \fi  
 }
 
 %%% End of pgf-pie.sty
