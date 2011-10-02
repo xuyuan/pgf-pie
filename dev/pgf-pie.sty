@@ -35,19 +35,27 @@ chart by using PGF/Tikz package.]
   % slice
   \draw[line join=round, fill=#6, #9] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
-  % label
-  \iflegend
-  \else
-  \path (O) -- ++ (\midangle:\radius)
-  node[inner sep=0, \text=\midangle:#4]{};
-  \fi
-
-  % number
   \pgfmathparse{min(((#2)-(#1)-10)/110*(-0.3),0)}
   \let\temp\pgfmathresult
   \pgfmathparse{(max(\temp,-0.5) + 0.8)*#7}
   \let\innerpos\pgfmathresult
-  \path (O) -- ++(\midangle:\innerpos) node {#3};
+
+  \ifthenelse{\equal{\text}{inside}}
+  {
+    % label and number together
+    \path (O) -- ++(\midangle:\innerpos) node {\shortstack{#4 \\ #3}};
+  }
+  {
+    % label
+    \iflegend
+    \else
+    \path (O) -- ++ (\midangle:\radius)
+    node[inner sep=0, \text=\midangle:#4]{};
+    \fi
+
+    % number
+    \path (O) -- ++(\midangle:\innerpos) node {#3};
+  }
 }
 
 \newcommand{\pgfpie@findColor}[1]
