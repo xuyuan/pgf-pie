@@ -71,6 +71,18 @@ chart by using PGF/Tikz package.]
   }
 }
 
+\newcommand{\pgfpie@findExplode}[1]
+{
+  \pgfmathparse{int(mod(#1,\value{pgfpie@explodeLength}))}
+  \let\ei\pgfmathresult
+  \foreach \e [count=\j from 0] in \explode {
+    \ifnum \j=\ei
+    \xdef\theexplode{\e}
+    \breakforeach
+    \fi
+  }
+}
+
 % #1: bottom left point
 % #2: size
 % #3: number
@@ -264,10 +276,12 @@ chart by using PGF/Tikz package.]
   \else
   \ifcloud
   %%%%%%%%%% CLOUD PIE BGEIN %%%%%%%%%%%
-  \xdef\cloudGap{0.1}
   % drawing loop
   \foreach \p/\t [count=\i from 0] in {#2}
   {
+    % find explode
+    \pgfpie@findExplode{\i}
+    \def\cloudGap{\theexplode + 0.1}
     \pgfmathparse{sqrt(\p / \sum) * \radius}
     \let\cloudR\pgfmathresult
     \ifnum \i = 0
@@ -355,14 +369,7 @@ chart by using PGF/Tikz package.]
     \fi
 
     % find explode
-    \pgfmathparse{int(mod(\i,\value{pgfpie@explodeLength}))}
-    \let\ei\pgfmathresult
-    \foreach \e [count=\j from 0] in \explode {
-      \ifnum \j=\ei
-      \xdef\theexplode{\e}
-      \breakforeach
-      \fi
-    }
+    \pgfpie@findExplode{\i}
 
     % find color
     \pgfpie@findColor{\i}
