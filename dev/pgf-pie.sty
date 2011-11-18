@@ -122,8 +122,7 @@ chart by using PGF/Tikz package.]
   }
 }
 
-\newcounter{pgfpie@angleBegin}
-\newcounter{pgfpie@angleEnd}
+\newlength{\pgfpie@angleEnd}
 \newcounter{pgfpie@explodeLength}
 \newcounter{pgfpie@colorLength}
 \newcounter{pgfpie@sliceLength}
@@ -235,7 +234,7 @@ chart by using PGF/Tikz package.]
   \setcounter{pgfpie@colorLength}{0}
   \foreach \c in \color { \addtocounter{pgfpie@colorLength}{1} }
   
-  \setcounter{pgfpie@angleEnd}{0}
+  \pgfmathsetlength{\pgfpie@angleEnd}{0}
 
   \setcounter{pgfpie@sliceLength}{0}
   \foreach \p/\e in {#2} { \addtocounter{pgfpie@sliceLength}{1} }
@@ -385,18 +384,19 @@ chart by using PGF/Tikz package.]
   \xdef\theradius{\radius}
   \fi
 
+  \xdef\pgfpie@angleBegin{\the\pgfpie@angleEnd}
   % drawing loop
   \foreach \p/\t [count=\i from 0] in {#2}
   {
-    \setcounter{pgfpie@angleBegin}{\value{pgfpie@angleEnd}}
+    \pgfmathsetlength{\pgfpie@angleEnd}{\pgfpie@angleBegin}
     \ifpolar
     % Polar area diagram
-    \addtocounter{pgfpie@angleEnd}{\polarangle}
+    \pgfmathaddtolength{\pgfpie@angleEnd}{\polarangle}
     \pgfmathparse{sqrt(\p) * \polarRadiusUnit}
     \xdef\theradius{\pgfmathresult}
     \else
     % normal pie
-    \addtocounter{pgfpie@angleEnd}{\p}
+    \pgfmathaddtolength{\pgfpie@angleEnd}{\p}
     \fi
 
     % find explode
@@ -404,15 +404,15 @@ chart by using PGF/Tikz package.]
 
     % find color
     \pgfpie@findColor{\i}
-
-    \pgfpie@slice{\thepgfpie@angleBegin/\sum*360+\rotate}
-    {\thepgfpie@angleEnd/\sum*360+\rotate}
+    \pgfpie@slice{\pgfpie@angleBegin/\sum*360+\rotate}
+    {\the\pgfpie@angleEnd/\sum*360+\rotate}
     {\p}
     {\t}
     {\theexplode}
     {\thecolor}
     {\theradius}
     {\pos}
+    \xdef\pgfpie@angleBegin{\the\pgfpie@angleEnd}
   }
   %%%%%%%%%% CIRCLE PIE END %%%%%%%%%%%
   \fi
