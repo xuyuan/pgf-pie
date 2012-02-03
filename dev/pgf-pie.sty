@@ -151,7 +151,7 @@ chart by using PGF/Tikz package.]
 \def\settext#1\pgfeov{\xdef\text{#1}}
 \pgfkeyslet{/text/.@cmd}{\settext}
 
-\def\setsum#1\pgfeov{\xdef\sum{#1}}
+\def\setsum#1\pgfeov{\xdef\pgfpie@sum{#1}}
 \pgfkeyslet{/sum/.@cmd}{\setsum}
 
 \def\setrotate#1\pgfeov{\xdef\rotate{#1}}
@@ -174,7 +174,7 @@ chart by using PGF/Tikz package.]
 \renewcommand{\scalefont}[1]
 {
   \ifscalefont
-  \pgfmathparse{#1 / \sum * 3 + 0.9}
+  \pgfmathparse{#1 / \pgfpie@sum * 3 + 0.9}
   \scalefontorg{\pgfmathresult}
   \fi
 }
@@ -203,7 +203,7 @@ chart by using PGF/Tikz package.]
   % load user's parameters
   \pgfkeys{#1}
   % add percentage automatically
-  \ifthenelse{\equal{\sum}{100}}
+  \ifthenelse{\equal{\pgfpie@sum}{100}}
   {
     \pgfkeys{after number=\%}
     \pgfkeys{#1}
@@ -215,14 +215,14 @@ chart by using PGF/Tikz package.]
   {\legendfalse}
 
   % handle sum
-  \ifthenelse{\equal{\sum}{auto}}
+  \ifthenelse{\equal{\pgfpie@sum}{auto}}
   {
     % sum all input
-    \xdef\sum{0}
+    \xdef\pgfpie@sum{0}
     \foreach \p/\t in {#2}
     {
-      \pgfmathparse{\sum + \p}
-      \xdef\sum{\pgfmathresult}
+      \pgfmathparse{\pgfpie@sum + \p}
+      \xdef\pgfpie@sum{\pgfmathresult}
     }
   }
   {}
@@ -245,7 +245,7 @@ chart by using PGF/Tikz package.]
   \xdef\verticalLength{\pgfmathresult}
   \xdef\horizontalLength{\pgfmathresult}
   \path (\pos) -- ++(-\radius, -\radius) coordinate (start);
-  \pgfmathparse{\verticalLength * \horizontalLength / \sum}
+  \pgfmathparse{\verticalLength * \horizontalLength / \pgfpie@sum}
   \let\squareUnit\pgfmathresult
 
   % drawing loop
@@ -312,7 +312,7 @@ chart by using PGF/Tikz package.]
     % find explode
     \pgfpie@findExplode{\i}
     \def\cloudGap{\theexplode + 0.1}
-    \pgfmathparse{sqrt(\p / \sum) * \radius}
+    \pgfmathparse{sqrt(\p / \pgfpie@sum) * \radius}
     \let\cloudR\pgfmathresult
     \ifnum \i = 0
     % first cloud
@@ -376,7 +376,7 @@ chart by using PGF/Tikz package.]
     \xdef\maxValue{\p}
     \fi
   }
-  \pgfmathparse{\sum / \value{pgfpie@sliceLength}}
+  \pgfmathparse{\pgfpie@sum / \value{pgfpie@sliceLength}}
   \xdef\polarangle{\pgfmathresult}
   \pgfmathparse{\radius / sqrt(\maxValue)}
   \xdef\polarRadiusUnit{\pgfmathresult}
@@ -404,8 +404,8 @@ chart by using PGF/Tikz package.]
 
     % find color
     \pgfpie@findColor{\i}
-    \pgfpie@slice{\pgfpie@angleBegin/\sum*360+\rotate}
-    {\the\pgfpie@angleEnd/\sum*360+\rotate}
+    \pgfpie@slice{\pgfpie@angleBegin/\pgfpie@sum*360+\rotate}
+    {\the\pgfpie@angleEnd/\pgfpie@sum*360+\rotate}
     {\p}
     {\t}
     {\theexplode}
