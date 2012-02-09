@@ -41,7 +41,7 @@ chart by using PGF/Tikz package.]
   \pgfmathparse{(max(\temp,-0.5) + 0.8)*#7}
   \let\innerpos\pgfmathresult
 
-  \ifthenelse{\equal{\text}{inside}}
+  \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
     % label and number together
     \path (O) -- ++(\midangle:\innerpos) node
@@ -52,7 +52,7 @@ chart by using PGF/Tikz package.]
     \iflegend
     \else
     \path (O) -- ++ (\midangle:\radius)
-    node[inner sep=0, \text=\midangle:#4]{};
+    node[inner sep=0, \pgfpie@text=\midangle:#4]{};
     \fi
 
     % number
@@ -93,7 +93,7 @@ chart by using PGF/Tikz package.]
 % #5: text
 \newcommand{\pgfpie@square}[5]
 {
-  \ifthenelse{\equal{\text}{inside}}
+  \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
     \draw[fill=#4, \style] (#1) rectangle node
     {\scalefont{#3}\shortstack{#5\\\beforenumber#3\afternumber}} ++(#2);
@@ -113,7 +113,7 @@ chart by using PGF/Tikz package.]
 \newcommand{\pgfpie@cloud}[6]
 {
   \draw[fill=#4, #5] (#1) circle[radius=#2];
-  \ifthenelse{\equal{\text}{inside}}
+  \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
     \node at (#1) {\scalefont{#3}\shortstack{#6\\\beforenumber#3\afternumber}};
   }
@@ -148,7 +148,7 @@ chart by using PGF/Tikz package.]
 \def\setafternumber#1\pgfeov{\def\afternumber{#1}}
 \pgfkeyslet{/after number/.@cmd}{\setafternumber}
 
-\def\settext#1\pgfeov{\xdef\text{#1}}
+\def\settext#1\pgfeov{\xdef\pgfpie@text{#1}}
 \pgfkeyslet{/text/.@cmd}{\settext}
 
 \def\setsum#1\pgfeov{\xdef\pgfpie@sum{#1}}
@@ -210,7 +210,7 @@ chart by using PGF/Tikz package.]
   }{}
 
   % legend or not
-  \ifthenelse{\equal{\text}{legend}}
+  \ifthenelse{\equal{\pgfpie@text}{legend}}
   {\legendtrue}
   {\legendfalse}
 
@@ -265,11 +265,11 @@ chart by using PGF/Tikz package.]
       %label
       \iflegend
       \else
-      \ifthenelse{\equal{\text}{inside}}
+      \ifthenelse{\equal{\pgfpie@text}{inside}}
       {}
       {
         \path (start) -- ++(\horizontalLength,\height*0.5) node[inner
-        sep=0, \text=0:\t]{};
+        sep=0, \pgfpie@text=0:\t]{};
       }
       \fi
 
@@ -288,11 +288,11 @@ chart by using PGF/Tikz package.]
       %label
       \iflegend
       \else
-      \ifthenelse{\equal{\text}{inside}}
+      \ifthenelse{\equal{\pgfpie@text}{inside}}
       {}
       {
         \path (start) -- ++(\width*0.5,\verticalLength) node[inner
-        sep=0, \text=90:\t]{};
+        sep=0, \pgfpie@text=90:\t]{};
       }
       \fi
 
@@ -358,11 +358,11 @@ chart by using PGF/Tikz package.]
     % label
     \iflegend
     \else
-    \ifthenelse{\equal{\text}{inside}}
+    \ifthenelse{\equal{\pgfpie@text}{inside}}
     {}
     {
       \path (O) -- ++(\cloudExtendDir:\cloudR)
-      node[inner sep=0, \text=\cloudExtendDir:\t] {};
+      node[inner sep=0, \pgfpie@text=\cloudExtendDir:\t] {};
     }
     \fi
   }
