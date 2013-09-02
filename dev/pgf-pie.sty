@@ -45,7 +45,7 @@ chart by using PGF/Tikz package.]
   {
     % label and number together
     \path (O) -- ++(\midangle:\innerpos) node
-    {\scalefont{#3}\shortstack{#4\\\beforenumber#3\afternumber}};
+    {\scalefont{#3}\shortstack{#4\\\pgfpie@numbertext{#3}}};
   }
   {
     % label
@@ -57,7 +57,7 @@ chart by using PGF/Tikz package.]
 
     % number
     \path (O) -- ++(\midangle:\innerpos) node
-    {\scalefont{#3}\beforenumber#3\afternumber};
+    {\scalefont{#3}\pgfpie@numbertext{#3}};
   }
 }
 
@@ -96,11 +96,11 @@ chart by using PGF/Tikz package.]
   \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
     \draw[fill=#4, \style] (#1) rectangle node
-    {\scalefont{#3}\shortstack{#5\\\beforenumber#3\afternumber}} ++(#2);
+    {\scalefont{#3}\shortstack{#5\\\pgfpie@numbertext{#3}}} ++(#2);
   }
   {
     \draw[fill=#4, \style] (#1) rectangle node
-    {\scalefont{#3}\beforenumber#3\afternumber} ++(#2);
+    {\scalefont{#3}\pgfpie@numbertext{#3}} ++(#2);
   }
 }
 
@@ -115,10 +115,10 @@ chart by using PGF/Tikz package.]
   \draw[fill=#4, #5] (#1) circle[radius=#2];
   \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
-    \node at (#1) {\scalefont{#3}\shortstack{#6\\\beforenumber#3\afternumber}};
+    \node at (#1) {\scalefont{#3}\shortstack{#6\\\pgfpie@numbertext{#3}}};
   }
   {
-    \node at (#1) {\scalefont{#3}\beforenumber#3\afternumber};
+    \node at (#1) {\scalefont{#3}\pgfpie@numbertext{#3}};
   }
 }
 
@@ -179,6 +179,16 @@ chart by using PGF/Tikz package.]
   \fi
 }
 
+\newif\ifhidenumber
+\pgfkeys{/hide number/.is if=hidenumber}
+\newcommand{\pgfpie@numbertext}[1]
+{
+  \ifhidenumber
+  \else
+  \beforenumber#1\afternumber
+  \fi
+}
+
 \newcommand{\pie}[2][]
 {
   % load default parameters
@@ -199,6 +209,7 @@ chart by using PGF/Tikz package.]
     square=false,
     cloud=false,
     scale font=false,
+    hide number=false
   }
   % load user's parameters
   \pgfkeys{#1}
