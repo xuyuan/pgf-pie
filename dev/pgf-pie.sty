@@ -31,10 +31,10 @@ chart by using PGF/Tikz package.]
   \path (#8) -- ++(\midangle:#5) coordinate(O);
 
   \pgfmathparse{#7+#5}
-  \let\radius\pgfmathresult
+  \let\pgfpie@radius\pgfmathresult
   
   % slice
-  \draw[line join=round, fill=#6, \style] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
+  \draw[line join=round, fill=#6, \pgfpie@style] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   \pgfmathparse{min(((#2)-(#1)-10)/110*(-0.3),0)}
   \let\temp\pgfmathresult
@@ -51,7 +51,7 @@ chart by using PGF/Tikz package.]
     % label
     \iflegend
     \else
-    \path (O) -- ++ (\midangle:\radius)
+    \path (O) -- ++ (\midangle:\pgfpie@radius)
     node[inner sep=0, \pgfpie@text=\midangle:#4]{};
     \fi
 
@@ -65,7 +65,7 @@ chart by using PGF/Tikz package.]
 {
   \pgfmathparse{int(mod(#1,\value{pgfpie@colorLength}))}
   \let\ci\pgfmathresult
-  \foreach \c [count=\j from 0] in \color {
+  \foreach \c [count=\j from 0] in \pgfpie@color {
     \ifnum \j=\ci
     \xdef\thecolor{\c}
     \thecolor
@@ -78,7 +78,7 @@ chart by using PGF/Tikz package.]
 {
   \pgfmathparse{int(mod(#1,\value{pgfpie@explodeLength}))}
   \let\ei\pgfmathresult
-  \foreach \e [count=\j from 0] in \explode {
+  \foreach \e [count=\j from 0] in \pgfpie@explode {
     \ifnum \j=\ei
     \xdef\theexplode{\e}
     \breakforeach
@@ -95,11 +95,11 @@ chart by using PGF/Tikz package.]
 {
   \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
-    \draw[fill=#4, \style] (#1) rectangle node
+    \draw[fill=#4, \pgfpie@style] (#1) rectangle node
     {\scalefont{#3}\shortstack{#5\\\pgfpie@numbertext{#3}}} ++(#2);
   }
   {
-    \draw[fill=#4, \style] (#1) rectangle node
+    \draw[fill=#4, \pgfpie@style] (#1) rectangle node
     {\scalefont{#3}\pgfpie@numbertext{#3}} ++(#2);
   }
 }
@@ -127,25 +127,25 @@ chart by using PGF/Tikz package.]
 \newcounter{pgfpie@colorLength}
 \newcounter{pgfpie@sliceLength}
 
-\def\setexplode#1\pgfeov{\def\explode{#1}}
+\def\setexplode#1\pgfeov{\def\pgfpie@explode{#1}}
 \pgfkeyslet{/explode/.@cmd}{\setexplode}
 
-\def\setcolor#1\pgfeov{\def\color{#1}}
+\def\setcolor#1\pgfeov{\def\pgfpie@color{#1}}
 \pgfkeyslet{/color/.@cmd}{\setcolor}
 
-\def\setradius#1\pgfeov{\def\radius{#1}}
+\def\setradius#1\pgfeov{\def\pgfpie@radius{#1}}
 \pgfkeyslet{/radius/.@cmd}{\setradius}
 
-\def\setpos#1\pgfeov{\def\pos{#1}}
+\def\setpos#1\pgfeov{\def\pgfpie@pos{#1}}
 \pgfkeyslet{/pos/.@cmd}{\setpos}
 
-\def\setstyle#1\pgfeov{\def\style{#1}}
+\def\setstyle#1\pgfeov{\def\pgfpie@style{#1}}
 \pgfkeyslet{/style/.@cmd}{\setstyle}
 
-\def\setbeforenumber#1\pgfeov{\def\beforenumber{#1}}
+\def\setbeforenumber#1\pgfeov{\def\pgfpie@beforenumber{#1}}
 \pgfkeyslet{/before number/.@cmd}{\setbeforenumber}
 
-\def\setafternumber#1\pgfeov{\def\afternumber{#1}}
+\def\setafternumber#1\pgfeov{\def\pgfpie@afternumber{#1}}
 \pgfkeyslet{/after number/.@cmd}{\setafternumber}
 
 \def\settext#1\pgfeov{\xdef\pgfpie@text{#1}}
@@ -154,7 +154,7 @@ chart by using PGF/Tikz package.]
 \def\setsum#1\pgfeov{\xdef\pgfpie@sum{#1}}
 \pgfkeyslet{/sum/.@cmd}{\setsum}
 
-\def\setrotate#1\pgfeov{\xdef\rotate{#1}}
+\def\setrotate#1\pgfeov{\xdef\pgfpie@rotate{#1}}
 \pgfkeyslet{/rotate/.@cmd}{\setrotate}
 
 \newif\ifpolar
@@ -185,7 +185,7 @@ chart by using PGF/Tikz package.]
 {
   \ifhidenumber
   \else
-  \beforenumber#1\afternumber
+  \pgfpie@beforenumber#1\pgfpie@afternumber
   \fi
 }
 
@@ -240,10 +240,10 @@ chart by using PGF/Tikz package.]
 
   % init counters
   \setcounter{pgfpie@explodeLength}{0}
-  \foreach \e in \explode { \addtocounter{pgfpie@explodeLength}{1} }
+  \foreach \e in \pgfpie@explode { \addtocounter{pgfpie@explodeLength}{1} }
 
   \setcounter{pgfpie@colorLength}{0}
-  \foreach \c in \color { \addtocounter{pgfpie@colorLength}{1} }
+  \foreach \c in \pgfpie@color { \addtocounter{pgfpie@colorLength}{1} }
   
   \pgfmathsetlength{\pgfpie@angleEnd}{0}
 
@@ -252,10 +252,10 @@ chart by using PGF/Tikz package.]
 
   \ifsquare
   %%%%%%%%%% SQUARE PIE BEGIN %%%%%%%%%%%
-  \pgfmathparse{\radius*2}
+  \pgfmathparse{\pgfpie@radius*2}
   \xdef\verticalLength{\pgfmathresult}
   \xdef\horizontalLength{\pgfmathresult}
-  \path (\pos) -- ++(-\radius, -\radius) coordinate (start);
+  \path (\pgfpie@pos) -- ++(-\pgfpie@radius, -\pgfpie@radius) coordinate (start);
   \pgfmathparse{\verticalLength * \horizontalLength / \pgfpie@sum}
   \let\squareUnit\pgfmathresult
 
@@ -323,18 +323,18 @@ chart by using PGF/Tikz package.]
     % find explode
     \pgfpie@findExplode{\i}
     \def\cloudGap{\theexplode + 0.1}
-    \pgfmathparse{sqrt(\p / \pgfpie@sum) * \radius}
+    \pgfmathparse{sqrt(\p / \pgfpie@sum) * \pgfpie@radius}
     \let\cloudR\pgfmathresult
     \ifnum \i = 0
     % first cloud
-    \coordinate (O) at (\pos);
+    \coordinate (O) at (\pgfpie@pos);
     \xdef\cloudRone{\cloudR}
-    \xdef\cloudExtendDir{180+\rotate}
+    \xdef\cloudExtendDir{180+\pgfpie@rotate}
     \else
     \ifnum \i = 1
     % second cloud
     \xdef\cloudRtwo{\cloudR}
-    \xdef\cloudExtendDir{45+\rotate}
+    \xdef\cloudExtendDir{45+\pgfpie@rotate}
     \path (O) -- ++(\cloudExtendDir:\cloudRone+\cloudGap+\cloudRtwo) coordinate (O);
     \else
     % next cloud
@@ -364,7 +364,7 @@ chart by using PGF/Tikz package.]
     \pgfpie@findColor{\i}
 
     \pgfpie@cloud{O}{\cloudR}{\p}
-    {\thecolor}{\style}{\t}
+    {\thecolor}{\pgfpie@style}{\t}
 
     % label
     \iflegend
@@ -389,10 +389,10 @@ chart by using PGF/Tikz package.]
   }
   \pgfmathparse{\pgfpie@sum / \value{pgfpie@sliceLength}}
   \xdef\polarangle{\pgfmathresult}
-  \pgfmathparse{\radius / sqrt(\maxValue)}
+  \pgfmathparse{\pgfpie@radius / sqrt(\maxValue)}
   \xdef\polarRadiusUnit{\pgfmathresult}
   \else
-  \xdef\theradius{\radius}
+  \xdef\theradius{\pgfpie@radius}
   \fi
 
   \xdef\pgfpie@angleBegin{\the\pgfpie@angleEnd}
@@ -415,14 +415,14 @@ chart by using PGF/Tikz package.]
 
     % find color
     \pgfpie@findColor{\i}
-    \pgfpie@slice{\pgfpie@angleBegin/\pgfpie@sum*360+\rotate}
-    {\the\pgfpie@angleEnd/\pgfpie@sum*360+\rotate}
+    \pgfpie@slice{\pgfpie@angleBegin/\pgfpie@sum*360+\pgfpie@rotate}
+    {\the\pgfpie@angleEnd/\pgfpie@sum*360+\pgfpie@rotate}
     {\p}
     {\t}
     {\theexplode}
     {\thecolor}
     {\theradius}
-    {\pos}
+    {\pgfpie@pos}
     \xdef\pgfpie@angleBegin{\the\pgfpie@angleEnd}
   }
   %%%%%%%%%% CIRCLE PIE END %%%%%%%%%%%
@@ -439,7 +439,7 @@ chart by using PGF/Tikz package.]
     \foreach \p/\t  [count=\i from 0] in {#2}
     {
       \pgfpie@findColor{\i}
-      \node[draw, fill=\thecolor, \style, below of=legendpos, label=0:\t] (legendpos) {};
+      \node[draw, fill=\thecolor, \pgfpie@style, below of=legendpos, label=0:\t] (legendpos) {};
     }
   \end{scope}
   \fi  
