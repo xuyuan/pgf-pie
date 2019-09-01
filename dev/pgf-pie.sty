@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Start of pgf-pie.sty
 % 
 % Some LaTeX macros for pie chart by using PGF/Tikz package.
@@ -10,7 +10,8 @@
 \ProvidesPackage{pgf-pie}[2011/10/02 v0.2 Some LaTeX macros for pie
 chart by using PGF/Tikz package.]
 
-\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+\usetikzlibrary{pgfplots.colorbrewer} 
 \RequirePackage{ifthen}
 \RequirePackage{scalefnt}
 
@@ -24,7 +25,8 @@ chart by using PGF/Tikz package.]
 % #6: fill color
 % #7: radius
 % #8: center
-\newcommand{\pgfpie@slice}[8]{
+% #9: draw
+\newcommand{\pgfpie@slice}[9]{
   \pgfmathparse{0.5*(#1)+0.5*(#2)}
   \let\midangle\pgfmathresult
 
@@ -34,17 +36,17 @@ chart by using PGF/Tikz package.]
   \let\radius\pgfmathresult
   
   % slice
-  \draw[line join=round, fill=#6, \style] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
+  \draw[line join=round, fill=#6, \style, draw=#9] (O) -- ++(#1:#7) arc (#1:#2:#7) -- cycle;
 
   \pgfmathparse{min(((#2)-(#1)-10)/110*(-0.3),0)}
   \let\temp\pgfmathresult
   \pgfmathparse{(max(\temp,-0.5) + 0.8)*#7}
   \let\innerpos\pgfmathresult
-
+	
   \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
     % label and number together
-    \path (O) -- ++(\midangle:\innerpos) node
+    \path (O) -- ++(\midangle:\innerpos) node[\tcolor]
     {\scalefont{#3}\shortstack{#4\\\pgfpie@numbertext{#3}}};
   }
   {
@@ -52,11 +54,11 @@ chart by using PGF/Tikz package.]
     \iflegend
     \else
     \path (O) -- ++ (\midangle:\radius)
-    node[inner sep=0, \pgfpie@text=\midangle:#4]{};
+    node[inner sep=0, \pgfpie@text=\midangle:\textcolor{\tcolor}{#4}]{};
     \fi
 
     % number
-    \path (O) -- ++(\midangle:\innerpos) node
+    \path (O) -- ++(\midangle:\innerpos) node[\tcolor]
     {\scalefont{#3}\pgfpie@numbertext{#3}};
   }
 }
@@ -65,7 +67,7 @@ chart by using PGF/Tikz package.]
 {
   \pgfmathparse{int(mod(#1,\value{pgfpie@colorLength}))}
   \let\ci\pgfmathresult
-  \foreach \c [count=\j from 0] in \color {
+  \foreach \c [count=\j from 0] in \fillcolor {
     \ifnum \j=\ci
     \xdef\thecolor{\c}
     \thecolor
@@ -91,17 +93,19 @@ chart by using PGF/Tikz package.]
 % #3: number
 % #4: color
 % #5: text
-\newcommand{\pgfpie@square}[5]
+% #6: draw
+\newcommand{\pgfpie@square}[6]
 {
   \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
-    \draw[fill=#4, \style] (#1) rectangle node
+    \draw[fill=#4, \style, draw=#6] (#1) rectangle node[\tcolor]
     {\scalefont{#3}\shortstack{#5\\\pgfpie@numbertext{#3}}} ++(#2);
   }
   {
-    \draw[fill=#4, \style] (#1) rectangle node
+    \draw[fill=#4, \style, draw=#6] (#1) rectangle node[\tcolor]
     {\scalefont{#3}\pgfpie@numbertext{#3}} ++(#2);
   }
+
 }
 
 % #1: pos
@@ -110,15 +114,16 @@ chart by using PGF/Tikz package.]
 % #4: color
 % $5: style
 % $6: label
-\newcommand{\pgfpie@cloud}[6]
+% #7: draw
+\newcommand{\pgfpie@cloud}[7]
 {
-  \draw[fill=#4, #5] (#1) circle[radius=#2];
+  \draw[fill=#4, #5, draw=#7] (#1) circle[radius=#2];
   \ifthenelse{\equal{\pgfpie@text}{inside}}
   {
-    \node at (#1) {\scalefont{#3}\shortstack{#6\\\pgfpie@numbertext{#3}}};
+    \node[\tcolor] at (#1) {\scalefont{#3}\shortstack{#6\\\pgfpie@numbertext{#3}}};
   }
   {
-    \node at (#1) {\scalefont{#3}\pgfpie@numbertext{#3}};
+    \node[\tcolor] at (#1) {\scalefont{#3}\pgfpie@numbertext{#3}};
   }
 }
 
@@ -130,7 +135,7 @@ chart by using PGF/Tikz package.]
 \def\setexplode#1\pgfeov{\def\explode{#1}}
 \pgfkeyslet{/explode/.@cmd}{\setexplode}
 
-\def\setcolor#1\pgfeov{\def\color{#1}}
+\def\setcolor#1\pgfeov{\def\fillcolor{#1}}
 \pgfkeyslet{/color/.@cmd}{\setcolor}
 
 \def\setradius#1\pgfeov{\def\radius{#1}}
@@ -189,6 +194,17 @@ chart by using PGF/Tikz package.]
   \fi
 }
 
+\pgfkeys{
+ /border/.estore in = \border,
+ /title/.store in = \title,
+ /legendstyle/.store in = \legendstyle,
+ /colormap/.store in = \colormap,
+ /colors/.store in = \colors,
+ /tcolor/.store in = \tcolor,
+ /legendyshift/.store in = \legendyshift,
+ /legendxshift/.store in = \legendxshift,
+}
+
 \newcommand{\pie}[2][]
 {
   % load default parameters
@@ -209,10 +225,73 @@ chart by using PGF/Tikz package.]
     square=false,
     cloud=false,
     scale font=false,
-    hide number=false
+	hide number=false,
+	border=black,
+	title=,
+	legendstyle=right,
+	tcolor=black,
+	legendyshift=0,
+	legendxshift=0,
+	colormap=,
   }
   % load user's parameters
   \pgfkeys{#1}
+  
+  % COLORBREWER schemes
+  \ifthenelse{\equal{\colormap}{BuGn} \OR \equal{\colormap}{BuPu} \OR \equal{\colormap}{GnBu} \OR \equal{\colormap}{OrRd} \OR \equal{\colormap}{PuBu} \OR \equal{\colormap}{PuBuGn} \OR \equal{\colormap}{PuRd} \OR \equal{\colormap}{RdPu} \OR \equal{\colormap}{YlGn} \OR \equal{\colormap}{YlGnBu} \OR \equal{\colormap}{YlOrBr} \OR \equal{\colormap}{YlOrRd} \OR \equal{\colormap}{Blues} \OR \equal{\colormap}{Greens} \OR \equal{\colormap}{Greys} \OR \equal{\colormap}{Oranges} \OR \equal{\colormap}{Purples} \OR \equal{\colormap}{Reds}}{
+  \ifthenelse{\equal{\colors}{3}}{\pgfkeys{color={\colormap-C,\colormap-F,\colormap-I}}}{}
+  \ifthenelse{\equal{\colors}{4}}{\pgfkeys{color={\colormap-B,\colormap-E,\colormap-G,\colormap-J}}}{}
+  \ifthenelse{\equal{\colors}{5}}{\pgfkeys{color={\colormap-B,\colormap-E,\colormap-G,\colormap-I,\colormap-K}}}{}
+  \ifthenelse{\equal{\colors}{6}}{\pgfkeys{color={\colormap-B,\colormap-D,\colormap-F,\colormap-G,\colormap-I,\colormap-K}}}{}
+  \ifthenelse{\equal{\colors}{7}}{\pgfkeys{color={\colormap-B,\colormap-D,\colormap-F,\colormap-G,\colormap-H,\colormap-J,\colormap-L}}}{}
+  \ifthenelse{\equal{\colors}{8}}{\pgfkeys{color={\colormap-A,\colormap-C,\colormap-D,\colormap-F,\colormap-G,\colormap-H,\colormap-J,\colormap-L}}}{}
+  \ifthenelse{\equal{\colors}{9}}{\pgfkeys{color={\colormap-A,\colormap-C,\colormap-D,\colormap-F,\colormap-G,\colormap-H,\colormap-J,\colormap-K,\colormap-M}}}{}
+  }{}
+  
+  \ifthenelse{\equal{\colormap}{BrBG} \OR \equal{\colormap}{PiYG} \OR \equal{\colormap}{PRGn} \OR \equal{\colormap}{RdGy} \OR \equal{\colormap}{PuOr} \OR \equal{\colormap}{RdBu} \OR \equal{\colormap}{RdYlBu} \OR \equal{\colormap}{RdYlGn} \OR \equal{\colormap}{Spectral}}{
+  \ifthenelse{\equal{\colors}{3}}{\pgfkeys{color={\colormap-E,\colormap-H,\colormap-K}}}{}
+  \ifthenelse{\equal{\colors}{4}}{\pgfkeys{color={\colormap-C,\colormap-F,\colormap-J,\colormap-M}}}{}
+  \ifthenelse{\equal{\colors}{5}}{\pgfkeys{color={\colormap-C,\colormap-F,\colormap-H,\colormap-J,\colormap-M}}}{}
+  \ifthenelse{\equal{\colors}{6}}{\pgfkeys{color={\colormap-B,\colormap-E,\colormap-G,\colormap-H,\colormap-K,\colormap-N}}}{}
+  \ifthenelse{\equal{\colors}{7}}{\pgfkeys{color={\colormap-B,\colormap-E,\colormap-G,\colormap-H,\colormap-I,\colormap-K,\colormap-N}}}{}
+  \ifthenelse{\equal{\colors}{8}}{\pgfkeys{color={\colormap-B,\colormap-D,\colormap-F,\colormap-G,\colormap-I,\colormap-J,\colormap-L,\colormap-N}}}{}
+  \ifthenelse{\equal{\colors}{9}}{\pgfkeys{color={\colormap-B,\colormap-D,\colormap-F,\colormap-G,\colormap-H,\colormap-I,\colormap-J,\colormap-L,\colormap-N}}}{}
+  \ifthenelse{\equal{\colors}{10}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-D,\colormap-F,\colormap-G,\colormap-I,\colormap-J,\colormap-L,\colormap-N,\colormap-O}}}{}
+  \ifthenelse{\equal{\colors}{11}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-D,\colormap-F,\colormap-G,\colormap-H,\colormap-I,\colormap-J,\colormap-L,\colormap-N,\colormap-O}}}{}
+  }{}
+  
+  \ifthenelse{\equal{\colormap}{Accent} \OR \equal{\colormap}{Pastel2} \OR \equal{\colormap}{Dark2} \OR \equal{\colormap}{Set2}}{
+  \ifthenelse{\equal{\colors}{3}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C}}}{}
+  \ifthenelse{\equal{\colors}{4}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D}}}{}
+  \ifthenelse{\equal{\colors}{5}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E}}}{}
+  \ifthenelse{\equal{\colors}{6}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F}}}{}
+  \ifthenelse{\equal{\colors}{7}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G}}}{}
+  \ifthenelse{\equal{\colors}{8}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G,\colormap-H}}}{}
+  }{}
+  
+  \ifthenelse{\equal{\colormap}{Pastel1} \OR \equal{\colormap}{Set1}}{
+  \ifthenelse{\equal{\colors}{3}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C}}}{}
+  \ifthenelse{\equal{\colors}{4}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D}}}{}
+  \ifthenelse{\equal{\colors}{5}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E}}}{}
+  \ifthenelse{\equal{\colors}{6}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F}}}{}
+  \ifthenelse{\equal{\colors}{7}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G}}}{}
+  \ifthenelse{\equal{\colors}{8}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G,\colormap-H}}}{}
+  \ifthenelse{\equal{\colors}{9}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G,\colormap-H,\colormap-I}}}{}
+  }{}
+  
+  \ifthenelse{\equal{\colormap}{Paired} \OR \equal{\colormap}{Set3}}{
+  \ifthenelse{\equal{\colors}{3}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C}}}{}
+  \ifthenelse{\equal{\colors}{4}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D}}}{}
+  \ifthenelse{\equal{\colors}{5}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E}}}{}
+  \ifthenelse{\equal{\colors}{6}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F}}}{}
+  \ifthenelse{\equal{\colors}{7}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G}}}{}
+  \ifthenelse{\equal{\colors}{8}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G,\colormap-H}}}{}
+  \ifthenelse{\equal{\colors}{9}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G,\colormap-H,\colormap-I}}}{}
+  \ifthenelse{\equal{\colors}{10}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G,\colormap-H,\colormap-I,\colormap-J}}}{}
+  \ifthenelse{\equal{\colors}{11}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G,\colormap-H,\colormap-I,\colormap-J,\colormap-K}}}{}
+  \ifthenelse{\equal{\colors}{12}}{\pgfkeys{color={\colormap-A,\colormap-B,\colormap-C,\colormap-D,\colormap-E,\colormap-F,\colormap-G,\colormap-H,\colormap-I,\colormap-J,\colormap-K,\colormap-K}}}{}
+  }{}
+   
   % add percentage automatically
   \ifthenelse{\equal{\pgfpie@sum}{100}}
   {
@@ -243,7 +322,7 @@ chart by using PGF/Tikz package.]
   \foreach \e in \explode { \addtocounter{pgfpie@explodeLength}{1} }
 
   \setcounter{pgfpie@colorLength}{0}
-  \foreach \c in \color { \addtocounter{pgfpie@colorLength}{1} }
+  \foreach \c in \fillcolor { \addtocounter{pgfpie@colorLength}{1} }
   
   \pgfmathsetlength{\pgfpie@angleEnd}{0}
 
@@ -273,6 +352,7 @@ chart by using PGF/Tikz package.]
       {\p}
       {\thecolor}
       {\t}
+	  {\border}
       %label
       \iflegend
       \else
@@ -280,7 +360,7 @@ chart by using PGF/Tikz package.]
       {}
       {
         \path (start) -- ++(\horizontalLength,\height*0.5) node[inner
-        sep=0, \pgfpie@text=0:\t]{};
+        sep=0, \pgfpie@text=0:\textcolor{\tcolor}{\t}]{};
       }
       \fi
 
@@ -296,6 +376,7 @@ chart by using PGF/Tikz package.]
       {\p}
       {\thecolor}
       {\t}
+	  {\border}
       %label
       \iflegend
       \else
@@ -303,7 +384,7 @@ chart by using PGF/Tikz package.]
       {}
       {
         \path (start) -- ++(\width*0.5,\verticalLength) node[inner
-        sep=0, \pgfpie@text=90:\t]{};
+        sep=0, \pgfpie@text=90:\textcolor{\tcolor}{\t}]{};
       }
       \fi
 
@@ -364,7 +445,7 @@ chart by using PGF/Tikz package.]
     \pgfpie@findColor{\i}
 
     \pgfpie@cloud{O}{\cloudR}{\p}
-    {\thecolor}{\style}{\t}
+    {\thecolor}{\style}{\t}{\border}
 
     % label
     \iflegend
@@ -373,7 +454,7 @@ chart by using PGF/Tikz package.]
     {}
     {
       \path (O) -- ++(\cloudExtendDir:\cloudR)
-      node[inner sep=0, \pgfpie@text=\cloudExtendDir:\t] {};
+      node[inner sep=0, \pgfpie@text=\cloudExtendDir:\textcolor{\tcolor}{\t}] {};
     }
     \fi
   }
@@ -423,6 +504,7 @@ chart by using PGF/Tikz package.]
     {\thecolor}
     {\theradius}
     {\pos}
+	{\border}
     \xdef\pgfpie@angleBegin{\the\pgfpie@angleEnd}
   }
   %%%%%%%%%% CIRCLE PIE END %%%%%%%%%%%
@@ -431,18 +513,55 @@ chart by using PGF/Tikz package.]
 
   % legend
   \iflegend
-  \coordinate[xshift=0.8cm,
-  yshift=(\value{pgfpie@sliceLength}*0.5+1)*0.5cm] (legendpos) at
+  
+  \ifthenelse{\equal{\legendstyle}{left}}  
+  {
+  \coordinate[xshift=-0.8cm+\legendxshift,
+  yshift=(\value{pgfpie@sliceLength}*0.5+1)*0.5cm+\legendyshift] (legendpos) at
+  (current bounding box.west);
+
+  \begin{scope}[node distance=0.5cm]
+    \foreach \p/\t  [count=\i from 0] in {#2}
+    {
+      \pgfpie@findColor{\i}
+      \node[fill=\thecolor, \style, below of=legendpos, label={[left=.75em]0:\textcolor{\tcolor}{\t}}, draw=\border] (legendpos) {};
+    }
+  \end{scope}  
+  }
+  {
+  \ifthenelse{\equal{\legendstyle}{horizontal}} 
+  {
+  \coordinate[yshift=-3ex+\legendyshift, xshift=\legendxshift] (legendpos) at
+  (current bounding box.south west);
+
+  \begin{scope}[node distance=0.5cm]
+    \foreach \p/\t  [count=\i from 0] in {#2}
+    {
+      \pgfpie@findColor{\i}
+      \node[fill=\thecolor, \style, right of=legendpos, label={[name=lnode]0:\textcolor{\tcolor}{\t}}, draw=\border] (legendpos) {};
+	  \coordinate (legendpos) at (lnode.east);
+    }
+  \end{scope}
+  }
+  {
+  \coordinate[xshift=0.8cm+\legendxshift,
+  yshift=(\value{pgfpie@sliceLength}*0.5+1)*0.5cm+\legendyshift] (legendpos) at
   (current bounding box.east);
 
   \begin{scope}[node distance=0.5cm]
     \foreach \p/\t  [count=\i from 0] in {#2}
     {
       \pgfpie@findColor{\i}
-      \node[draw, fill=\thecolor, \style, below of=legendpos, label=0:\t] (legendpos) {};
+      \node[fill=\thecolor, \style, below of=legendpos, label=0:\textcolor{\tcolor}{\t}, draw=\border] (legendpos) {};
     }
   \end{scope}
-  \fi  
+  } 
+  }
+  
+  \fi
+  
+  %title
+  \ifthenelse{\equal{\title}{}}{}{\node[above=3ex] at (current bounding box.north) {\title};};
 }
 
 %%% End of pgf-pie.sty
